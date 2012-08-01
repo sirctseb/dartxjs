@@ -3,15 +3,15 @@
 #import('dart:json');
 
 class DartToJSCommunicator {
-  static List<Function> _handlers;
-  static List<Function> _onceHandlers;
+  static List<Function> _handlers = const [];
+  static List<Function> _onceHandlers = const [];
+  static bool _init = false;
 
+  // TODO when to call initialize?
   static void initialize() {
-    if(_handlers == null) {
-      _handlers = new List<Function>();
-      _onceHandlers = new List<Function>();
-
+    if(!_init) {
       window.on.message.add(_dispatchMessage);
+      _init = true;
     }
   }
 
@@ -50,6 +50,7 @@ class DartToJSCommunicator {
 
   // add a function to be called when dart gets a message
   static void addReceiver(Function f) {
+    initialize();
     _handler.add(f);
   }
   // remove a funciton as a receiver
@@ -62,7 +63,41 @@ class DartToJSCommunicator {
 
   // add a function to be called once when dart gets a message
   static void receiveMessage(Function f) {
+    initialize();
     // add handler
     _onceHandlers.add(f);
+  }
+}
+
+class PostOffice {
+  // TODO only one recipient per address?
+  static Map<String, Function> _mailBoxes = const {};
+  static bool _init = false;
+  static void initialize() {
+    if(!_init) {
+      // register with DartToJSCommunicator
+      DartToJSCommunicator.addReceiver(_deliverMail);
+      _init = true;
+    }
+  }
+  static void registerMailBox(String address, Function recipient) {
+    initialize();
+    _mailBoxes[address] = recipient;
+  }
+  static void unregisterMailBox(String address) {
+    _mailBoxes.remove(address);
+  }
+  static void _deliverMail(data) {
+    if(!data.containsKey("address")) {
+      return;
+    }
+    // see if there is an address registered at the requested place
+    if(_mailBoxes.containsKey(data["address"]) {
+      // deliver
+      _mailBoxes["address"](data["content"]);
+    });
+  }
+  static sendMail(String address, Map content) {
+    DartToJSCommunicator.sendMessage({"address": address, "content", content});
   }
 }

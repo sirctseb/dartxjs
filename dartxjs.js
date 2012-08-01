@@ -63,3 +63,33 @@ JSToDartCommunicator = (function() {
 		}
 	}
 })();
+
+PostOffice = (function() {
+
+	var that = {};
+
+	var mailBoxes = {};
+
+	// register with JSToDartCommunicator
+	JSToDartCommunicator.addReceiver(deliverMail);
+
+	var deliverMail = function(data) {
+		if(data.address === undefined) return;
+		if(mailBoxes[address] === undefined) return;
+		mailBoxes[address](data.content);
+	};
+
+	return {
+		sendMail: function(address, content) {
+			JSToDartCommunicator.sendMessage({"address": address, "content": content});
+		},
+
+		registerMailBox: function(address, recipient) {
+			mailBoxes[address] = recipient;
+		},
+
+		unregisterMailBox: function(address) {
+			delete mailBoxes[address];
+		}
+	}
+})();
