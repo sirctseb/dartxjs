@@ -98,6 +98,6 @@ class PostOffice {
     });
   }
   static sendMail(String address, Map content) {
-    DartToJSCommunicator.sendMessage({"address": address, "content", content});
+    DartToJSCommunicator.sendMessage({"address": address, "content": content});
   }
 }
